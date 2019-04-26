@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'dart:convert';
 import './views/header.dart';
 import './views/search.dart';
 import './views/banner.dart';
@@ -33,15 +35,6 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -49,45 +42,115 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List bannerList = new List();
+  List recommendList = new List();
+  List postList = new List();
+
+  Future getBannerData() async {
+    var responseBody;
+    var httpClient = new HttpClient();
+    var request = await httpClient.getUrl(
+      Uri.parse("http://api1.dev.ttxsapp.com/v2/articles/recommended")
+    );
+
+    var response = await request.close();
+
+    if(response.statusCode == 200) {
+      responseBody = await response.transform(utf8.decoder).join();
+      setState(() {
+        bannerList = json.decode(responseBody);
+      });
+    }
+  }
+
+  Future getRecommendData() async {
+    var responseBody;
+    var httpClient = new HttpClient();
+    var request = await httpClient.getUrl(
+      Uri.parse("http://api2.dev.ttxsapp.com/v2/teams/official/users")
+    );
+
+    var response = await request.close();
+    if(response.statusCode == 200) {
+      responseBody = await response.transform(utf8.decoder).join();
+      var datas = json.decode(responseBody);
+      var lists = new List();
+
+      void addList(Map item) {
+        lists.addAll(item['list']);
+      }
+
+      datas.forEach((item) => addList(item));
+
+      setState(() {
+        recommendList = lists;
+      });
+    }
+  }
+
+  Future getPostData() async {
+    var responseBody;
+    var httpClient = new HttpClient();
+    var request = await httpClient.getUrl(
+      Uri.parse("http://api1.dev.ttxsapp.com/v2/teams/official/posts")
+    );
+
+    var response = await request.close();
+
+    if(response.statusCode == 200) {
+      responseBody = await response.transform(utf8.decoder).join();
+      setState(() {
+        postList = json.decode(responseBody);
+        print(postList);
+      });
+    }
+  }
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    getBannerData();
+    getRecommendData();
+    getPostData();
+  }
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       body: SafeArea(
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () {
-            FocusScope.of(context).requestFocus(FocusNode());
-          },
-          child: Column(
-            children: <Widget>[
-              Header(),
-              SearchBox(),
-              new Flexible(
-                child: CustomScrollView(
-                  reverse: false,
-                  shrinkWrap: true,
-                  slivers: <Widget>[
-                    SliverList(
-                      delegate: SliverChildListDelegate(
-                      [
-                        BannerBox(),
-                        RecommendBox(),
-                        PostBox()
-                      ],
-                    )
-                  )
-                ],
-              )
-              )
-            ],
+        child: RefreshIndicator(
+          onRefresh: () {},
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              FocusScope.of(context).requestFocus(FocusNode());
+            },
+            child: Column(
+              children: <Widget>[
+                Header(),
+                SearchBox(),
+                new Flexible(
+                  child: CustomScrollView(
+                    reverse: false,
+                    shrinkWrap: true,
+                    slivers: <Widget>[
+                      SliverList(
+                        delegate: SliverChildListDelegate([
+                          BannerBox(model: bannerList),
+                          RecommendBox(model: recommendList),
+                          PostBox(model: postList)
+                        ]),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            )
+            
           )
-          
         )
       )
     );

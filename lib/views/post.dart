@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 
-class PostBox extends StatelessWidget {
+class PostBox extends StatefulWidget {
+  PostBox({ Key key, this.model }) : super(key: key);
+  final List model;
+
+  @override
+  _PostBox createState() => _PostBox();
+}
+class _PostBox extends State<PostBox> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: FutureBuilder(
-        future: DefaultAssetBundle.of(context).loadString('load_json/post_data.json'),
-        builder: (context, snapshot) {
-          var postData = json.decode(snapshot.data.toString());
-
-          return ListView.builder(
+      child: ListView.builder(
             physics: new NeverScrollableScrollPhysics(),
             scrollDirection: Axis.vertical,
-            itemCount: postData.length,
+            itemCount: widget.model.length,
             shrinkWrap: true,
             // itemExtent: 50,
             itemBuilder: (BuildContext context, int index) {
@@ -32,10 +33,10 @@ class PostBox extends StatelessWidget {
                           child: SizedBox(
                             width: 32,
                             height: 32,
-                            child: Image(
-                              image: NetworkImage(postData[index]['user']['avatar']),
+                            child: widget.model[index]['user']['avatar'] != null ? Image(
+                              image: NetworkImage(widget.model[index]['user']['avatar']),
                               fit: BoxFit.fill
-                            ),
+                            ) : Container(),
                           ),
                         ),
                         Container(
@@ -44,14 +45,14 @@ class PostBox extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                postData[index]['user']['nick'],
+                                widget.model[index]['user']['nick'],
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Color(0xff2C2B2E)
                                 )
                               ),
                               Text(
-                                postData[index]['published_at'].toString(),
+                                widget.model[index]['published_at'].toString(),
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: Color(0xffA29FA3)
@@ -66,7 +67,7 @@ class PostBox extends StatelessWidget {
                     Container(
                       margin: EdgeInsets.only(top: 12, left: 40),
                       child: Text(
-                        postData[index]['words'],
+                        widget.model[index]['words'],
                         style: TextStyle(
                           fontSize: 15,
                           color: Color(0xff2c2b2e)
@@ -77,9 +78,7 @@ class PostBox extends StatelessWidget {
                 ),
               );
             },
-          );
-        }
-      ),
+          )
     );
   }
 }

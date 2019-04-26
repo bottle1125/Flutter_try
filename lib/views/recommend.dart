@@ -1,7 +1,14 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 
-class RecommendBox extends StatelessWidget {
+class RecommendBox extends StatefulWidget {
+  RecommendBox({Key key, this.model}) : super(key: key);
+
+  final List model;
+
+  @override
+  _RecommendBox createState() => _RecommendBox();
+}
+class _RecommendBox extends State<RecommendBox> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -21,14 +28,9 @@ class RecommendBox extends StatelessWidget {
           ),
           Container(
             height: 90,
-            child: FutureBuilder(
-              future: DefaultAssetBundle.of(context).loadString('load_json/recommend_data.json'),
-              builder: (context, snapshot) {
-                var recommendData = json.decode(snapshot.data.toString());
-
-                return ListView.builder(
+            child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: recommendData.length,
+                  itemCount: widget.model.length,
                   itemExtent: 82,
                   itemBuilder: (BuildContext context, int index) {
                     return Container(
@@ -39,16 +41,16 @@ class RecommendBox extends StatelessWidget {
                             child: SizedBox(
                               width: 52,
                               height: 52,
-                              child: Image(
-                                image: NetworkImage(recommendData[index]['avatar']),
+                              child: widget.model[index]['avatar'] != null ? Image(
+                                image:  NetworkImage(widget.model[index]['avatar']),
                                 fit: BoxFit.fill
-                              ),
+                              ) : Container(),
                             ),
                           ),
                           Container(
                             margin: EdgeInsets.only(top: 8),
                             child: Text(
-                              recommendData[index]['nick'],
+                              widget.model[index]['nick'],
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Color(0xff333333),
@@ -59,8 +61,6 @@ class RecommendBox extends StatelessWidget {
                       )
                     );
                   }
-                );
-              },
             )
           ),
           Container(
