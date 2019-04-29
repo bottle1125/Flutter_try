@@ -2,9 +2,7 @@
 import 'package:flutter/material.dart';
 
 class BannerBox extends StatefulWidget {
-  BannerBox({Key key, this.model}) : super(key: key) {
-    print(this.model);
-  }
+  BannerBox({Key key, this.model}) : super(key: key);
 
   final List model;
 

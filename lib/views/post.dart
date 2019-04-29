@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import './labeler.dart';
+import './templet.dart';
 class PostBox extends StatefulWidget {
   PostBox({ Key key, this.model }) : super(key: key);
   final List model;
@@ -8,6 +9,35 @@ class PostBox extends StatefulWidget {
   _PostBox createState() => _PostBox();
 }
 class _PostBox extends State<PostBox> {
+  String getTime(int timestamp) {
+    String result = '';
+
+    DateTime now = DateTime.now(); 
+    DateTime timer = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+
+    var diff = now.difference(timer);
+
+    if(diff.inDays > 7) {
+      result = timer.month.toString() + '-' + timer.day.toString() + ' ' + timer.hour.toString() + ':' + timer.minute.toString();;
+    } else if(diff.inDays > 2) {
+      result = diff.inDays.toString() + '天前';
+    } else if(diff.inDays >= 1) {
+      result = '昨天';
+    } else if(diff.inHours >= 1) {
+      result = diff.inHours.toString() + '小时前';
+    } else if(diff.inMinutes >= 1) {
+      result = diff.inMinutes.toString() + '分钟前';
+    } else {
+      result = '刚刚';
+    }
+
+    return result;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -16,7 +46,6 @@ class _PostBox extends State<PostBox> {
             scrollDirection: Axis.vertical,
             itemCount: widget.model.length,
             shrinkWrap: true,
-            // itemExtent: 50,
             itemBuilder: (BuildContext context, int index) {
               return Container(
                 padding: EdgeInsets.only(
@@ -52,7 +81,7 @@ class _PostBox extends State<PostBox> {
                                 )
                               ),
                               Text(
-                                widget.model[index]['published_at'].toString(),
+                                getTime(widget.model[index]['published_at']),
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: Color(0xffA29FA3)
@@ -66,13 +95,13 @@ class _PostBox extends State<PostBox> {
                     ),
                     Container(
                       margin: EdgeInsets.only(top: 12, left: 40),
-                      child: Text(
-                        widget.model[index]['words'],
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Color(0xff2c2b2e)
-                        ),
-                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Labeler(text: widget.model[index]['words']),
+                          widget.model[index]['type'] == 3 ? TempletBox(templets: widget.model[index]['refs']) : Container()
+                        ],
+                      )
                     )
                   ],
                 ),

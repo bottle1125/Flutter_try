@@ -92,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var responseBody;
     var httpClient = new HttpClient();
     var request = await httpClient.getUrl(
-      Uri.parse("http://api1.dev.ttxsapp.com/v2/teams/official/posts")
+      Uri.parse("http://api1.dev.ttxsapp.com/v2/teams/official/posts?exclude_label_value=2")
     );
 
     var response = await request.close();
@@ -101,10 +101,20 @@ class _MyHomePageState extends State<MyHomePage> {
       responseBody = await response.transform(utf8.decoder).join();
       setState(() {
         postList = json.decode(responseBody);
-        print(postList);
       });
     }
   }
+  
+  Future<Null> _handleRefresh() async {
+    return Future.wait([
+      getBannerData(),
+      getRecommendData(),
+      getPostData()
+    ]).then((_) {
+      return null;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -117,12 +127,13 @@ class _MyHomePageState extends State<MyHomePage> {
     getRecommendData();
     getPostData();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () {},
+          onRefresh: () => _handleRefresh(),
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
             onTap: () {
@@ -149,7 +160,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 )
               ],
             )
-            
           )
         )
       )
